@@ -1,0 +1,39 @@
+-- RLS Audit (2026-02-13)
+-- This migration contains no schema changes. It documents the audit
+-- of all Row-Level Security policies across DB tables and Storage.
+--
+-- ============================================================
+-- 1. public.profiles  (20240101000000_init.sql)
+-- ============================================================
+--   SELECT : USING (auth.uid() = id)                          OK
+--   UPDATE : USING (auth.uid() = id) WITH CHECK (auth.uid() = id)  OK
+--   INSERT : WITH CHECK (auth.uid() = id)                     OK
+--   DELETE : none (intentional — profiles persist with user)   OK
+--
+-- ============================================================
+-- 2. public.files  (20240102000000_create_files.sql)
+-- ============================================================
+--   SELECT : USING (auth.uid() = owner_id)                    OK
+--   INSERT : WITH CHECK (auth.uid() = owner_id)               OK
+--   DELETE : USING (auth.uid() = owner_id)                    OK
+--   UPDATE : none (intentional — file metadata is immutable)  OK
+--
+-- ============================================================
+-- 3. storage.objects — bucket "files"  (20240103000000_create_storage_bucket.sql)
+-- ============================================================
+--   Bucket is private (public = false)                        OK
+--   SELECT : USING (bucket_id = 'files' AND auth.uid()::text = (storage.foldername(name))[1])  OK
+--   INSERT : WITH CHECK (bucket_id = 'files' AND auth.uid()::text = (storage.foldername(name))[1])  OK
+--   DELETE : USING (bucket_id = 'files' AND auth.uid()::text = (storage.foldername(name))[1])  OK
+--   UPDATE : none (intentional — uploads are immutable)       OK
+--
+-- ============================================================
+-- 4. Realtime  (20240104000000_enable_files_realtime.sql)
+-- ============================================================
+--   public.files added to supabase_realtime publication       OK
+--   RLS is enforced on realtime subscriptions                 OK
+--
+-- VERDICT: All policies are least-privilege. No changes required.
+-- Next migration (20240106) adds indexes and constraints to public.files.
+
+SELECT 1; -- no-op so the migration is recorded in supabase_migrations

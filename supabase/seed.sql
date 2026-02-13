@@ -1,0 +1,7 @@
+-- Supabase seed data
+-- Add INSERT statements here to populate local dev with test data.
+-- This file runs after migrations on `supabase db reset`.
+--
+-- Example:
+--   INSERT INTO public.profiles (id, display_name)
+--   VALUES ('00000000-0000-0000-0000-000000000001', 'Test User');
